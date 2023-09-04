@@ -9,6 +9,7 @@ import 'test_utils.dart';
 
 final String toolBackend = fileSystem.path.join(getFlutterRoot(), 'packages', 'flutter_tools', 'bin', 'tool_backend.dart');
 final String examplePath = fileSystem.path.join(getFlutterRoot(), 'examples', 'hello_world');
+final String exampleInstallBundleLibPath = fileSystem.path.join(examplePath, 'build', 'linux', 'x64', 'debug', 'bundle', 'lib');
 final String dart = fileSystem.path.join(getFlutterRoot(), 'bin', platform.isWindows ? 'dart.bat' : 'dart');
 
 void main() {
@@ -51,6 +52,28 @@ void main() {
     );
   });
 
+  testWithoutContext('tool_backend.dart exits if INSTALL_BUNDLE_LIB_DIR is not set', () async {
+    final ProcessResult result = await processManager.run(
+      <String>[
+        dart,
+        toolBackend,
+        'linux-x64',
+        'debug',
+      ],
+      environment: <String, String>{
+        'PROJECT_DIR': examplePath,
+      },
+    );
+
+    expect(
+      result,
+      const ProcessResultMatcher(
+        exitCode: 1,
+        stderrPattern: 'INSTALL_BUNDLE_LIB_DIR environment variable must be set.',
+      ),
+    );
+  });
+
   testWithoutContext('tool_backend.dart exits if local engine does not match build mode', () async {
     final ProcessResult result = await processManager.run(<String>[
       dart,
@@ -59,6 +82,7 @@ void main() {
       'debug',
     ], environment: <String, String>{
       'PROJECT_DIR': examplePath,
+      'INSTALL_BUNDLE_LIB_DIR': exampleInstallBundleLibPath,
       'LOCAL_ENGINE': 'release_foo_bar', // Does not contain "debug",
     });
 
@@ -79,6 +103,7 @@ void main() {
       'debug',
     ], environment: <String, String>{
       'PROJECT_DIR': examplePath,
+      'INSTALL_BUNDLE_LIB_DIR': exampleInstallBundleLibPath,
       'LOCAL_ENGINE': 'debug_foo_bar', // OK
       'LOCAL_ENGINE_HOST': 'release_foo_bar', // Does not contain "debug",
     });

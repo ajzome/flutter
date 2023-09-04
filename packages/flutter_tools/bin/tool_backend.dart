@@ -11,6 +11,8 @@ Future<void> main(List<String> arguments) async {
   final String targetPlatform = arguments[0];
   final String buildMode = arguments[1].toLowerCase();
 
+  final bool bundleNativeAssets = targetPlatform == 'linux-x64' || targetPlatform == 'linux-arm64';
+
   final String? dartDefines = Platform.environment['DART_DEFINES'];
   final bool dartObfuscation = Platform.environment['DART_OBFUSCATION'] == 'true';
   final String? extraFrontEndOptions = Platform.environment['EXTRA_FRONT_END_OPTIONS'];
@@ -29,6 +31,12 @@ Future<void> main(List<String> arguments) async {
   final bool treeShakeIcons = Platform.environment['TREE_SHAKE_ICONS'] == 'true';
   final bool verbose = Platform.environment['VERBOSE_SCRIPT_LOGGING'] == 'true';
   final bool prefixedErrors = Platform.environment['PREFIXED_ERROR_LOGGING'] == 'true';
+  final String? installBundleLibPath;
+  if (bundleNativeAssets) {
+    installBundleLibPath = Platform.environment['INSTALL_BUNDLE_LIB_DIR'];
+  } else {
+    installBundleLibPath = null;
+  }
 
   if (projectDirectory == null) {
     stderr.write('PROJECT_DIR environment variable must be set to the location of Flutter project to be built.');
@@ -38,6 +46,11 @@ Future<void> main(List<String> arguments) async {
     stderr.write('FLUTTER_ROOT environment variable must be set to the location of the Flutter SDK.');
     exit(1);
   }
+  if (bundleNativeAssets && installBundleLibPath == null) {
+    stderr.write('INSTALL_BUNDLE_LIB_DIR environment variable must be set.');
+    exit(1);
+  }
+
 
   Directory.current = projectDirectory;
 
@@ -123,6 +136,15 @@ or
   if (await assembleProcess.exitCode != 0) {
     exit(1);
   }
+
+  if (bundleNativeAssets) {
+    await embedNativeAssets(
+      targetPlatform: targetPlatform,
+      projectDir: projectDirectory,
+      installBundleLibPath: installBundleLibPath!,
+      verbose: verbose,
+    );
+  }
 }
 
 /// Perform a simple path join on the segments based on the current platform.
@@ -131,4 +153,56 @@ or
 String pathJoin(List<String> segments) {
   final String separator = Platform.isWindows ? r'\' : '/';
   return segments.join(separator);
+}
+
+/// Adds native assets to the bundle.
+///
+/// Native assets are copied in this bin script instead of in CMake build files.
+/// Copying multiple files in CMake either requires copying a parent folder, or
+/// having the files exist at the time the CMake script is executed to match a
+/// glob list. The first would not put the dynamic libraries on the LD_PATH, and
+/// the latter would require dummy dynamic libraries to exist before calling
+/// this backend.
+/// Moreover, the other backends also copy in the backend bin script.
+Future<void> embedNativeAssets({
+  required String targetPlatform,
+  required String projectDir,
+  required String installBundleLibPath,
+  required bool verbose,
+}) async {
+  final String os;
+  final String extension;
+  if (targetPlatform == 'linux-x64' || targetPlatform == 'linux-arm64') {
+    os = 'linux';
+    extension = 'so';
+  } else {
+    // TODO(dacoharkes): Implement other OSes. https://github.com/flutter/flutter/issues/129757
+    return;
+  }
+  final String nativeAssetsPath = '$projectDir/build/native_assets/$os/';
+  final Directory installBundleLibDir = Directory(installBundleLibPath);
+  final Directory nativeAssetsDir = Directory(nativeAssetsPath);
+  if (!installBundleLibDir.existsSync()) {
+    installBundleLibDir.createSync(recursive: true);
+  }
+  if (nativeAssetsDir.existsSync()) {
+    if (verbose) {
+      print('♦ Copying native assets from $nativeAssetsPath to $installBundleLibPath.');
+    }
+    await Future.wait(
+      nativeAssetsDir
+          .listSync()
+          .whereType<File>()
+          .where((File file) => file.path.endsWith('.$extension'))
+          .map(
+        (File file) {
+          final String targetPath =
+              '$installBundleLibPath/${file.path.split('/').last}';
+          return file.copy(targetPath);
+        },
+      ),
+    );
+  } else if (verbose) {
+    print("♦ No native assets to bundle. $nativeAssetsPath doesn't exist.");
+  }
 }

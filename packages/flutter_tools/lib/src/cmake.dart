@@ -112,6 +112,7 @@ set(FLUTTER_VERSION_BUILD ${buildVersion ?? 0} PARENT_SCOPE)
 list(APPEND FLUTTER_TOOL_ENVIRONMENT
   "FLUTTER_ROOT=$escapedFlutterRoot"
   "PROJECT_DIR=$escapedProjectDir"
+  "INSTALL_BUNDLE_LIB_DIR=\${PROJECT_BINARY_DIR}/bundle/lib"
 ''');
   environment.forEach((String key, String value) {
     final String configValue = _escapeBackslashes(value);

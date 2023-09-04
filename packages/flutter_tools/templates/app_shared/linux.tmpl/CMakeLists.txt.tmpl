@@ -105,9 +105,9 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
 # Start with a clean build bundle directory every time.
-install(CODE "
-  file(REMOVE_RECURSE \"${BUILD_BUNDLE_DIR}/\")
-  " COMPONENT Runtime)
+# Clean build bundle immediately, not in the install phase, so that the
+# tool_backend.dart can place the native assets in the target bundle.
+file(REMOVE_RECURSE "${BUILD_BUNDLE_DIR}")
 
 set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/data")
 set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
