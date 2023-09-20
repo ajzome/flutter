@@ -16,7 +16,13 @@ dependencies:
   coverage: 1.6.3
   crypto: 3.0.3
   file: 6.1.4
-  flutter_template_images: 4.2.0
+#  flutter_template_images: 4.2.0
+  flutter_template_images:
+    # Main lacks the XROS template images, so we've one for now
+    git:
+      url: https://github.com/ajzome/packages.git
+      path: packages/flutter_template_images
+      ref: 77aa2990a8e6df6e03f0cf1901d9937618ae5c39
   html: 0.15.4
   http: 0.13.6
   intl: 0.18.1
