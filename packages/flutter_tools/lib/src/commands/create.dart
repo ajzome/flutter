@@ -259,6 +259,7 @@ class CreateCommand extends CreateBase {
     final bool includeLinux;
     final bool includeMacos;
     final bool includeWindows;
+    final bool includeXros;
     if (template == FlutterProjectType.module) {
       // The module template only supports iOS and Android.
       includeIos = true;
@@ -267,6 +268,7 @@ class CreateCommand extends CreateBase {
       includeLinux = false;
       includeMacos = false;
       includeWindows = false;
+      includeXros = true;
     } else if (template == FlutterProjectType.package) {
       // The package template does not supports any platform.
       includeIos = false;
@@ -275,6 +277,7 @@ class CreateCommand extends CreateBase {
       includeLinux = false;
       includeMacos = false;
       includeWindows = false;
+      includeXros = false;
     } else {
       includeIos = featureFlags.isIOSEnabled && platforms.contains('ios');
       includeAndroid = featureFlags.isAndroidEnabled && platforms.contains('android');
@@ -282,10 +285,11 @@ class CreateCommand extends CreateBase {
       includeLinux = featureFlags.isLinuxEnabled && platforms.contains('linux');
       includeMacos = featureFlags.isMacOSEnabled && platforms.contains('macos');
       includeWindows = featureFlags.isWindowsEnabled && platforms.contains('windows');
+      includeXros = featureFlags.isXROSEnabled && platforms.contains('xros');
     }
 
     String? developmentTeam;
-    if (includeIos) {
+    if (includeIos || includeXros) {
       developmentTeam = await getCodeSigningIdentityDevelopmentTeam(
         processManager: globals.processManager,
         platform: globals.platform,
@@ -309,6 +313,7 @@ class CreateCommand extends CreateBase {
       withEmptyMain: emptyArgument,
       androidLanguage: stringArg('android-language'),
       iosLanguage: stringArg('ios-language'),
+      xrosLanguage: stringArg('xros-language'),
       iosDevelopmentTeam: developmentTeam,
       ios: includeIos,
       android: includeAndroid,
@@ -316,6 +321,7 @@ class CreateCommand extends CreateBase {
       linux: includeLinux,
       macos: includeMacos,
       windows: includeWindows,
+      xros: includeXros,
       dartSdkVersionBounds: "'>=$dartSdk <4.0.0'",
       implementationTests: boolArg('implementation-tests'),
       agpVersion: gradle.templateAndroidGradlePluginVersion,
@@ -410,6 +416,7 @@ class CreateCommand extends CreateBase {
         macOSPlatform: includeMacos,
         windowsPlatform: includeWindows,
         webPlatform: includeWeb,
+        xrosPlatform: includeXros
       );
     }
     if (sampleCode != null) {
@@ -578,6 +585,7 @@ Your $application code is in $relativeAppMain.
     templateContext['iosIdentifier'] = CreateBase.createUTIIdentifier(organization, exampleProjectName);
     templateContext['macosIdentifier'] = CreateBase.createUTIIdentifier(organization, exampleProjectName);
     templateContext['windowsIdentifier'] = CreateBase.createWindowsIdentifier(organization, exampleProjectName);
+    templateContext['xrosIdentifier'] = CreateBase.createUTIIdentifier(organization, exampleProjectName);
     templateContext['description'] = 'Demonstrates how to use the $projectName plugin.';
     templateContext['pluginProjectName'] = projectName;
     templateContext['androidPluginIdentifier'] = androidPluginIdentifier;
@@ -647,6 +655,7 @@ Your $application code is in $relativeAppMain.
     templateContext['iosIdentifier'] = CreateBase.createUTIIdentifier(organization, exampleProjectName);
     templateContext['macosIdentifier'] = CreateBase.createUTIIdentifier(organization, exampleProjectName);
     templateContext['windowsIdentifier'] = CreateBase.createWindowsIdentifier(organization, exampleProjectName);
+    templateContext['xrosIdentifier'] = CreateBase.createUTIIdentifier(organization, exampleProjectName);
     templateContext['description'] = 'Demonstrates how to use the $projectName plugin.';
     templateContext['pluginProjectName'] = projectName;
     templateContext['androidPluginIdentifier'] = androidPluginIdentifier;

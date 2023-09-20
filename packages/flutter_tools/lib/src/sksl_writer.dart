@@ -47,6 +47,7 @@ Future<String?> sharedSkSlWriter(Device device, Map<String, Object?>? data, {
     case TargetPlatform.android:
     case TargetPlatform.darwin:
     case TargetPlatform.ios:
+    case TargetPlatform.xros:
     case TargetPlatform.fuchsia_arm64:
     case TargetPlatform.fuchsia_x64:
     case TargetPlatform.linux_arm64:

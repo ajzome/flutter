@@ -118,6 +118,7 @@ class BuildBundleCommand extends BuildSubCommand {
       case TargetPlatform.fuchsia_arm64:
       case TargetPlatform.fuchsia_x64:
       case TargetPlatform.ios:
+      case TargetPlatform.xros:
       case TargetPlatform.tester:
       case TargetPlatform.web_javascript:
         break;

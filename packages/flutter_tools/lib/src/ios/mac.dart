@@ -654,7 +654,7 @@ bool _checkXcodeVersion() {
   if (!globals.platform.isMacOS) {
     return false;
   }
-  final XcodeProjectInterpreter? xcodeProjectInterpreter = globals.xcodeProjectInterpreter;
+  final XcodeProjectInterpreter? xcodeProjectInterpreter = globals.iosXcodeProjectInterpreter;
   if (xcodeProjectInterpreter?.isInstalled != true) {
     globals.printError('Cannot find "xcodebuild". $_xcodeRequirement');
     return false;

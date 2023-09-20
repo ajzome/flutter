@@ -164,7 +164,7 @@ Future<T> runInContext<T>(
         processManager: globals.processManager,
         logger: globals.logger,
         platform: globals.platform,
-        xcodeProjectInterpreter: globals.xcodeProjectInterpreter!,
+        xcodeProjectInterpreter: globals.iosXcodeProjectInterpreter!,
         usage: globals.flutterUsage,
       ),
       CocoaPodsValidator: () => CocoaPodsValidator(
@@ -358,7 +358,7 @@ Future<T> runInContext<T>(
         processManager: globals.processManager,
         platform: globals.platform,
         fileSystem: globals.fs,
-        xcodeProjectInterpreter: globals.xcodeProjectInterpreter!,
+        xcodeProjectInterpreter: globals.iosXcodeProjectInterpreter!,
         userMessages: globals.userMessages,
       ),
       XCDevice: () => XCDevice(

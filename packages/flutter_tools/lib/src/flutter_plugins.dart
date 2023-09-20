@@ -795,6 +795,38 @@ Future<void> _writeIOSPluginRegistrant(FlutterProject project, List<Plugin> plug
   );
 }
 
+Future<void> _writeXROSPluginRegistrant(FlutterProject project, List<Plugin> plugins) async {
+  final List<Plugin> methodChannelPlugins = _filterMethodChannelPlugins(plugins, XROSPlugin.kConfigKey);
+  final List<Map<String, Object?>> xrosPlugins = _extractPlatformMaps(methodChannelPlugins, XROSPlugin.kConfigKey);
+  final Map<String, Object> context = <String, Object>{
+    'os': 'xros',
+    'deploymentTarget': '1.0',
+    'framework': 'Flutter',
+    'methodChannelPlugins': xrosPlugins,
+  };
+  if (project.isModule) {
+    final Directory registryDirectory = project.xros.pluginRegistrantHost;
+    _renderTemplateToFile(
+      _pluginRegistrantPodspecTemplate,
+      context,
+      registryDirectory.childFile('FlutterPluginRegistrant.podspec'),
+      globals.templateRenderer,
+    );
+  }
+  _renderTemplateToFile(
+    _objcPluginRegistryHeaderTemplate,
+    context,
+    project.xros.pluginRegistrantHeader,
+    globals.templateRenderer,
+  );
+  _renderTemplateToFile(
+    _objcPluginRegistryImplementationTemplate,
+    context,
+    project.xros.pluginRegistrantImplementation,
+    globals.templateRenderer,
+  );
+}
+
 /// The relative path from a project's main CMake file to the plugin symlink
 /// directory to use in the generated plugin CMake file.
 ///
@@ -1074,6 +1106,7 @@ Future<void> refreshPluginsList(
   FlutterProject project, {
   bool iosPlatform = false,
   bool macOSPlatform = false,
+  bool xrosPlatform = false,
 }) async {
   final List<Plugin> plugins = await findPlugins(project);
   // Sort the plugins by name to keep ordering stable in generated files.
@@ -1090,6 +1123,9 @@ Future<void> refreshPluginsList(
     }
     if (macOSPlatform) {
       globals.cocoaPods?.invalidatePodInstallOutput(project.macos);
+    }
+    if (xrosPlatform) {
+      globals.cocoaPods?.invalidatePodInstallOutput(project.ios);
     }
   }
 }
@@ -1142,6 +1178,7 @@ Future<void> injectPlugins(
   bool linuxPlatform = false,
   bool macOSPlatform = false,
   bool windowsPlatform = false,
+  bool xrosPlatform = false
 }) async {
   final List<Plugin> plugins = await findPlugins(project);
   // Sort the plugins by name to keep ordering stable in generated files.
@@ -1151,6 +1188,9 @@ Future<void> injectPlugins(
   }
   if (iosPlatform) {
     await _writeIOSPluginRegistrant(project, plugins);
+  }
+  if (xrosPlatform) {
+    await _writeXROSPluginRegistrant(project, plugins);
   }
   if (linuxPlatform) {
     await _writeLinuxPluginFiles(project, plugins);
@@ -1165,6 +1205,7 @@ Future<void> injectPlugins(
     final List<XcodeBasedProject> darwinProjects = <XcodeBasedProject>[
       if (iosPlatform) project.ios,
       if (macOSPlatform) project.macos,
+      if (xrosPlatform) project.xros,
     ];
     for (final XcodeBasedProject subproject in darwinProjects) {
       if (plugins.isNotEmpty) {

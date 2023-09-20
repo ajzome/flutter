@@ -511,6 +511,15 @@ class MDnsVmServiceDiscovery {
           'under System Preferences > Network > iPhone USB. '
           'See https://github.com/flutter/flutter/issues/46698 for details.'
         );
+      case TargetPlatform.xros:
+        UsageEvent('xros-mdns', 'no-ipv4-link-local', flutterUsage: _flutterUsage).send();
+        _logger.printError(
+            'The mDNS query for an attached visionOS device failed. It may '
+                'be necessary to disable the "Personal Hotspot" on the device, and '
+                'to ensure that the "Disable unless needed" setting is unchecked '
+                'under System Preferences > Network > iPhone USB. '
+                'See https://github.com/flutter/flutter/issues/46698 for details.'
+        );
       case TargetPlatform.android:
       case TargetPlatform.android_arm:
       case TargetPlatform.android_arm64:

@@ -215,6 +215,11 @@ class Template {
         return null;
       }
 
+      final bool xros = (context['xros'] as bool?) ?? false;
+      if (relativeDestinationPath.contains('xros') && !xros) {
+        return null;
+      }
+
       final String? projectName = context['projectName'] as String?;
       final String? androidIdentifier = context['androidIdentifier'] as String?;
       final String? pluginClass = context['pluginClass'] as String?;

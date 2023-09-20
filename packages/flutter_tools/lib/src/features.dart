@@ -41,6 +41,9 @@ abstract class FeatureFlags {
   /// Whether fuchsia is enabled.
   bool get isFuchsiaEnabled => true;
 
+  /// Whether visionOS is enabled.
+  bool get isXROSEnabled => true;
+
   /// Whether custom devices are enabled.
   bool get areCustomDevicesEnabled => false;
 
@@ -66,6 +69,7 @@ const List<Feature> allFeatures = <Feature>[
   flutterAndroidFeature,
   flutterIOSFeature,
   flutterFuchsiaFeature,
+  flutterXROSFeature,
   flutterCustomDevicesFeature,
   flutterWebWasm,
 ];
@@ -123,6 +127,12 @@ const Feature flutterFuchsiaFeature = Feature(
   master: FeatureChannelSetting(
     available: true,
   ),
+);
+
+/// The [Feature] for visionOS devices.
+const Feature flutterXROSFeature = Feature.fullyEnabled(
+  name: 'Flutter for visionOS',
+  configSetting: 'enable-xros',
 );
 
 const Feature flutterCustomDevicesFeature = Feature(

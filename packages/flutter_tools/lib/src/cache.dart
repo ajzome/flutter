@@ -66,6 +66,9 @@ class DevelopmentArtifact {
   /// Artifacts required for Fuchsia.
   static const DevelopmentArtifact fuchsia = DevelopmentArtifact._('fuchsia', feature: flutterFuchsiaFeature);
 
+  /// Artifacts required for visionOS development.
+  static const DevelopmentArtifact visionOS = DevelopmentArtifact._('xros', feature: flutterXROSFeature);
+
   /// Artifacts required for the Flutter Runner.
   static const DevelopmentArtifact flutterRunner = DevelopmentArtifact._('flutter_runner', feature: flutterFuchsiaFeature);
 
@@ -86,6 +89,7 @@ class DevelopmentArtifact {
     windows,
     linux,
     fuchsia,
+    visionOS,
     universal,
     flutterRunner,
   ];

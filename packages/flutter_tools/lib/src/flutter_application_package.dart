@@ -21,6 +21,7 @@ import 'project.dart';
 import 'tester/flutter_tester.dart';
 import 'web/web_device.dart';
 import 'windows/application_package.dart';
+import 'xros/application_package.dart';
 
 /// A package factory that supports all Flutter target platforms.
 class FlutterApplicationPackageFactory extends ApplicationPackageFactory {
@@ -81,6 +82,10 @@ class FlutterApplicationPackageFactory extends ApplicationPackageFactory {
         return applicationBinary == null
             ? await IOSApp.fromIosProject(FlutterProject.current().ios, buildInfo)
             : IOSApp.fromPrebuiltApp(applicationBinary);
+      case TargetPlatform.xros:
+        return applicationBinary == null
+            ? await XROSApp.fromXrosProject(FlutterProject.current().xros, buildInfo)
+            : XROSApp.fromPrebuiltApp(applicationBinary);
       case TargetPlatform.tester:
         return FlutterTesterApp.fromCurrentDirectory(globals.fs);
       case TargetPlatform.darwin:

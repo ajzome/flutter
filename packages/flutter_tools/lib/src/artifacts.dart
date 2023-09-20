@@ -133,6 +133,7 @@ TargetPlatform? _mapTargetPlatform(TargetPlatform? targetPlatform) {
     case TargetPlatform.android:
       return TargetPlatform.android_arm64;
     case TargetPlatform.ios:
+    case TargetPlatform.xros:
     case TargetPlatform.darwin:
     case TargetPlatform.linux_x64:
     case TargetPlatform.linux_arm64:
@@ -472,6 +473,8 @@ class CachedArtifacts implements Artifacts {
         return _getAndroidArtifactPath(artifact, platform!, mode!);
       case TargetPlatform.ios:
         return _getIosArtifactPath(artifact, platform!, mode, environmentType);
+      case TargetPlatform.xros:
+        return _getXrosArtifactPath(artifact, platform!, mode, environmentType);
       case TargetPlatform.darwin:
       case TargetPlatform.linux_x64:
       case TargetPlatform.linux_arm64:
@@ -541,6 +544,46 @@ class CachedArtifacts implements Artifacts {
   }
 
   String _getIosArtifactPath(Artifact artifact, TargetPlatform platform, BuildMode? mode, EnvironmentType? environmentType) {
+    switch (artifact) {
+      case Artifact.genSnapshot:
+      case Artifact.flutterXcframework:
+        final String artifactFileName = _artifactToFileName(artifact, _platform)!;
+        final String engineDir = _getEngineArtifactsPath(platform, mode)!;
+        return _fileSystem.path.join(engineDir, artifactFileName);
+      case Artifact.flutterFramework:
+        final String engineDir = _getEngineArtifactsPath(platform, mode)!;
+        return _getIosEngineArtifactPath(engineDir, environmentType, _fileSystem, _platform);
+      case Artifact.engineDartSdkPath:
+      case Artifact.engineDartBinary:
+      case Artifact.engineDartAotRuntime:
+      case Artifact.dart2jsSnapshot:
+      case Artifact.dart2wasmSnapshot:
+      case Artifact.wasmOptBinary:
+      case Artifact.frontendServerSnapshotForEngineDartSdk:
+      case Artifact.constFinder:
+      case Artifact.flutterMacOSFramework:
+      case Artifact.flutterPatchedSdkPath:
+      case Artifact.flutterTester:
+      case Artifact.fontSubset:
+      case Artifact.fuchsiaFlutterRunner:
+      case Artifact.fuchsiaKernelCompiler:
+      case Artifact.icuData:
+      case Artifact.isolateSnapshotData:
+      case Artifact.linuxDesktopPath:
+      case Artifact.linuxHeaders:
+      case Artifact.platformKernelDill:
+      case Artifact.platformLibrariesJson:
+      case Artifact.skyEnginePath:
+      case Artifact.vmSnapshotData:
+      case Artifact.windowsCppClientWrapper:
+      case Artifact.windowsDesktopPath:
+      case Artifact.flutterToolsFileGenerators:
+        return _getHostArtifactPath(artifact, platform, mode);
+    }
+  }
+
+
+  String _getXrosArtifactPath(Artifact artifact, TargetPlatform platform, BuildMode? mode, EnvironmentType? environmentType) {
     switch (artifact) {
       case Artifact.genSnapshot:
       case Artifact.flutterXcframework:
@@ -734,6 +777,7 @@ class CachedArtifacts implements Artifacts {
         assert(mode == null, 'Platform $platform does not support different build modes.');
         return _fileSystem.path.join(engineDir, platformName);
       case TargetPlatform.ios:
+      case TargetPlatform.xros:
       case TargetPlatform.android_arm:
       case TargetPlatform.android_arm64:
       case TargetPlatform.android_x64:
@@ -1024,6 +1068,7 @@ class CachedLocalEngineArtifacts implements Artifacts {
       case TargetPlatform.windows_x64:
         return 'windows-x64';
       case TargetPlatform.ios:
+      case TargetPlatform.xros:
       case TargetPlatform.android:
       case TargetPlatform.android_arm:
       case TargetPlatform.android_arm64:
@@ -1222,6 +1267,7 @@ class CachedLocalWebSdkArtifacts implements Artifacts {
       case TargetPlatform.windows_x64:
         return 'windows-x64';
       case TargetPlatform.ios:
+      case TargetPlatform.xros:
       case TargetPlatform.android:
       case TargetPlatform.android_arm:
       case TargetPlatform.android_arm64:

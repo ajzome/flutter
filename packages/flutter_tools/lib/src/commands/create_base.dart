@@ -29,6 +29,7 @@ const List<String> _kAvailablePlatforms = <String>[
   'linux',
   'macos',
   'web',
+  'xros'
 ];
 
 /// A list of all possible create platforms, even those that may not be enabled
@@ -40,6 +41,7 @@ const List<String> kAllCreatePlatforms = <String>[
   'linux',
   'macos',
   'web',
+  'xros'
 ];
 
 const String _kDefaultPlatformArgumentHelp =
@@ -100,6 +102,13 @@ abstract class CreateBase extends FlutterCommand {
       defaultsTo: 'swift',
       allowed: <String>['objc', 'swift'],
       help: 'The language to use for iOS-specific code, either Objective-C (legacy) or Swift (recommended).'
+    );
+    argParser.addOption(
+        'xros-language',
+        abbr: 'x',
+        defaultsTo: 'swift',
+        allowed: <String>['objc', 'swift'],
+        help: 'The language to use for visionOS-specific code, either Objective-C (legacy) or Swift (recommended).'
     );
     argParser.addOption(
       'android-language',
@@ -345,6 +354,7 @@ abstract class CreateBase extends FlutterCommand {
     String? androidLanguage,
     String? iosDevelopmentTeam,
     String? iosLanguage,
+    String? xrosLanguage,
     required String flutterRoot,
     required String dartSdkVersionBounds,
     String? agpVersion,
@@ -354,6 +364,7 @@ abstract class CreateBase extends FlutterCommand {
     bool withFfiPluginHook = false,
     bool withEmptyMain = false,
     bool ios = false,
+    bool xros = false,
     bool android = false,
     bool web = false,
     bool linux = false,
@@ -386,6 +397,7 @@ abstract class CreateBase extends FlutterCommand {
       'titleCaseProjectName': titleCaseProjectName,
       'androidIdentifier': androidIdentifier,
       'iosIdentifier': appleIdentifier,
+      'xrosIdentifier': appleIdentifier,
       'macosIdentifier': appleIdentifier,
       'linuxIdentifier': linuxIdentifier,
       'windowsIdentifier': windowsIdentifier,
@@ -405,11 +417,13 @@ abstract class CreateBase extends FlutterCommand {
       'withEmptyMain': withEmptyMain,
       'androidLanguage': androidLanguage,
       'iosLanguage': iosLanguage,
+      'xrosLanguage': xrosLanguage,
       'hasIosDevelopmentTeam': iosDevelopmentTeam != null && iosDevelopmentTeam.isNotEmpty,
       'iosDevelopmentTeam': iosDevelopmentTeam ?? '',
       'flutterRevision': escapeYamlString(globals.flutterVersion.frameworkRevision),
       'flutterChannel': escapeYamlString(globals.flutterVersion.getBranchName()), // may contain PII
       'ios': ios,
+      'xros': xros,
       'android': android,
       'web': web,
       'linux': linux,
@@ -514,6 +528,7 @@ abstract class CreateBase extends FlutterCommand {
 
     final bool androidPlatform = templateContext['android'] as bool? ?? false;
     final bool iosPlatform = templateContext['ios'] as bool? ?? false;
+    final bool xrosPlatform = templateContext['xros'] as bool? ?? false;
     final bool linuxPlatform = templateContext['linux'] as bool? ?? false;
     final bool macOSPlatform = templateContext['macos'] as bool? ?? false;
     final bool windowsPlatform = templateContext['windows'] as bool? ?? false;
@@ -561,6 +576,9 @@ abstract class CreateBase extends FlutterCommand {
     }
     if (windowsPlatform) {
       platformsForMigrateConfig.add(SupportedPlatform.windows);
+    }
+    if (xrosPlatform) {
+      platformsForMigrateConfig.add(SupportedPlatform.xros);
     }
     if (templateContext['fuchsia'] == true) {
       platformsForMigrateConfig.add(SupportedPlatform.fuchsia);

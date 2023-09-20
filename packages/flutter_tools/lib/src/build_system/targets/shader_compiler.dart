@@ -55,6 +55,7 @@ class DevelopmentShaderCompiler {
   void configureCompiler(TargetPlatform? platform, { required ImpellerStatus impellerStatus }) {
     switch (platform) {
       case TargetPlatform.ios:
+      case TargetPlatform.xros:
         _shaderTarget = ShaderTarget.impelleriOS;
       case TargetPlatform.android_arm64:
       case TargetPlatform.android_x64:

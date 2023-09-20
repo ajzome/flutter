@@ -40,6 +40,7 @@ enum SupportedPlatform {
   web,
   windows,
   fuchsia,
+  xros,
   root, // Special platform to represent the root project directory
 }
 
@@ -150,6 +151,22 @@ class FlutterProject {
         // consider a tool exit in this case to be non fatal for the program.
       }
     }
+    if (xros.existsSync()) {
+      // Don't require visionOS build info, this method is only
+      // used during create as best-effort, use the
+      // default target bundle identifier.
+      try {
+        final String? bundleIdentifier = await xros.productBundleIdentifier(null);
+        if (bundleIdentifier != null) {
+          candidates.add(bundleIdentifier);
+        }
+      } on ToolExit {
+        // It's possible that while parsing the build info for the xros project
+        // that the bundleIdentifier can't be resolve. However, we would like
+        // skip parsing that id in favor of searching in other place. We can
+        // consider a tool exit in this case to be non fatal for the program.
+      }
+    }
     if (android.existsSync()) {
       final String? applicationId = android.applicationId;
       final String? group = android.group;
@@ -172,6 +189,12 @@ class FlutterProject {
         candidates.add(bundleIdentifier);
       }
     }
+    if (example.xros.existsSync()) {
+      final String? bundleIdentifier = await example.xros.productBundleIdentifier(null);
+      if (bundleIdentifier != null) {
+        candidates.add(bundleIdentifier);
+      }
+    }
     return Set<String>.of(candidates.map<String?>(_organizationNameFromPackageName).whereType<String>());
   }
 
@@ -184,6 +207,9 @@ class FlutterProject {
 
   /// The iOS sub project of this project.
   late final IosProject ios = IosProject.fromFlutter(this);
+
+  /// The xrOS sub project of this project.
+  late final XrosProject xros = XrosProject.fromFlutter(this);
 
   /// The Android sub project of this project.
   late final AndroidProject android = AndroidProject._(this);
@@ -269,6 +295,9 @@ class FlutterProject {
     if (ios.exists) {
       platforms.add(SupportedPlatform.ios);
     }
+    if (xros.exists) {
+      platforms.add(SupportedPlatform.xros);
+    }
     if (web.existsSync()) {
       platforms.add(SupportedPlatform.web);
     }
@@ -336,6 +365,7 @@ class FlutterProject {
       macOSPlatform: featureFlags.isMacOSEnabled && macos.existsSync(),
       windowsPlatform: featureFlags.isWindowsEnabled && windows.existsSync(),
       webPlatform: featureFlags.isWebEnabled && web.existsSync(),
+      xrosPlatform: xros.existsSync(),
       deprecationBehavior: deprecationBehavior,
     );
   }
@@ -349,12 +379,13 @@ class FlutterProject {
     bool macOSPlatform = false,
     bool windowsPlatform = false,
     bool webPlatform = false,
+    bool xrosPlatform = false,
     DeprecationBehavior deprecationBehavior = DeprecationBehavior.none,
   }) async {
     if (!directory.existsSync() || isPlugin) {
       return;
     }
-    await refreshPluginsList(this, iosPlatform: iosPlatform, macOSPlatform: macOSPlatform);
+    await refreshPluginsList(this, iosPlatform: iosPlatform, macOSPlatform: macOSPlatform, xrosPlatform: xrosPlatform);
     if (androidPlatform) {
       await android.ensureReadyForPlatformSpecificTooling(deprecationBehavior: deprecationBehavior);
     }
@@ -373,6 +404,9 @@ class FlutterProject {
     if (webPlatform) {
       await web.ensureReadyForPlatformSpecificTooling();
     }
+    if (xrosPlatform) {
+      await xros.ensureReadyForPlatformSpecificTooling();
+    }
     await injectPlugins(
       this,
       androidPlatform: androidPlatform,
@@ -380,6 +414,7 @@ class FlutterProject {
       linuxPlatform: linuxPlatform,
       macOSPlatform: macOSPlatform,
       windowsPlatform: windowsPlatform,
+      xrosPlatform: xrosPlatform
     );
   }
 

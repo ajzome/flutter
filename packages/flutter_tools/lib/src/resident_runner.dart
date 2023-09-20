@@ -1622,6 +1622,8 @@ Future<String?> getMissingPackageHintForPlatform(TargetPlatform platform) async 
       return 'Is your project missing an $manifestPath?\nConsider running "flutter create ." to create one.';
     case TargetPlatform.ios:
       return 'Is your project missing an ios/Runner/Info.plist?\nConsider running "flutter create ." to create one.';
+    case TargetPlatform.xros:
+      return 'Is your project missing an xros/Runner/Info.plist?\nConsider running "flutter create ." to create one.';
     case TargetPlatform.android:
     case TargetPlatform.darwin:
     case TargetPlatform.fuchsia_arm64:

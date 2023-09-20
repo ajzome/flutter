@@ -200,6 +200,7 @@ class KernelSnapshot extends Target {
       case TargetPlatform.fuchsia_arm64:
       case TargetPlatform.fuchsia_x64:
       case TargetPlatform.ios:
+      case TargetPlatform.xros:
       case TargetPlatform.linux_arm64:
       case TargetPlatform.tester:
       case TargetPlatform.web_javascript:
@@ -216,6 +217,7 @@ class KernelSnapshot extends Target {
         'android',
       TargetPlatform.darwin => 'macos',
       TargetPlatform.ios => 'ios',
+      TargetPlatform.xros => 'xros',
       TargetPlatform.linux_arm64 || TargetPlatform.linux_x64 => 'linux',
       TargetPlatform.windows_x64 => 'windows',
       TargetPlatform.tester || TargetPlatform.web_javascript => null,

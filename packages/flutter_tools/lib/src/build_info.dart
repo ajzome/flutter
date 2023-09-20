@@ -432,6 +432,7 @@ String? validatedBuildNumberForPlatform(TargetPlatform targetPlatform, String? b
     return null;
   }
   if (targetPlatform == TargetPlatform.ios ||
+      targetPlatform == TargetPlatform.xros ||
       targetPlatform == TargetPlatform.darwin) {
     // See CFBundleVersion at https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
     final RegExp disallowed = RegExp(r'[^\d\.]');
@@ -448,7 +449,7 @@ String? validatedBuildNumberForPlatform(TargetPlatform targetPlatform, String? b
     }
     tmpBuildNumber = segments.join('.');
     if (tmpBuildNumber != buildNumber) {
-      logger.printTrace('Invalid build-number: $buildNumber for iOS/macOS, overridden by $tmpBuildNumber.\n'
+      logger.printTrace('Invalid build-number: $buildNumber for iOS/macOS/visionOS, overridden by $tmpBuildNumber.\n'
           'See CFBundleVersion at https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html');
     }
     return tmpBuildNumber;
@@ -479,6 +480,7 @@ String? validatedBuildNameForPlatform(TargetPlatform targetPlatform, String? bui
     return null;
   }
   if (targetPlatform == TargetPlatform.ios ||
+      targetPlatform == TargetPlatform.xros ||
       targetPlatform == TargetPlatform.darwin) {
     // See CFBundleShortVersionString at https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
     final RegExp disallowed = RegExp(r'[^\d\.]');
@@ -495,7 +497,7 @@ String? validatedBuildNameForPlatform(TargetPlatform targetPlatform, String? bui
     }
     tmpBuildName = segments.join('.');
     if (tmpBuildName != buildName) {
-      logger.printTrace('Invalid build-name: $buildName for iOS/macOS, overridden by $tmpBuildName.\n'
+      logger.printTrace('Invalid build-name: $buildName for iOS/macOS/visionOS, overridden by $tmpBuildName.\n'
           'See CFBundleShortVersionString at https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html');
     }
     return tmpBuildName;
@@ -529,6 +531,7 @@ enum TargetPlatform {
   android,
   ios,
   darwin,
+  xros,
   linux_x64,
   linux_arm64,
   windows_x64,
@@ -558,6 +561,7 @@ enum TargetPlatform {
       case TargetPlatform.android_x86:
       case TargetPlatform.darwin:
       case TargetPlatform.ios:
+      case TargetPlatform.xros:
       case TargetPlatform.linux_arm64:
       case TargetPlatform.linux_x64:
       case TargetPlatform.tester:
@@ -583,6 +587,7 @@ enum TargetPlatform {
       case TargetPlatform.fuchsia_arm64:
       case TargetPlatform.fuchsia_x64:
       case TargetPlatform.ios:
+      case TargetPlatform.xros:
       case TargetPlatform.tester:
       case TargetPlatform.web_javascript:
         throw UnsupportedError('Unexpected target platform $this');
@@ -590,7 +595,7 @@ enum TargetPlatform {
   }
 }
 
-/// iOS and macOS target device architecture.
+/// iOS, visionOS and macOS target device architecture.
 //
 // TODO(cbracken): split TargetPlatform.ios into ios_armv7, ios_arm64.
 enum DarwinArch {
@@ -665,6 +670,32 @@ List<DarwinArch> defaultIOSArchsForEnvironment(
   ];
 }
 
+/// The default set of visionOS device architectures to build for.
+List<DarwinArch> defaultXROSArchsForEnvironment(
+    EnvironmentType environmentType,
+    Artifacts artifacts,
+    ) {
+  // Handle single-arch local engines.
+  final LocalEngineInfo? localEngineInfo = artifacts.localEngineInfo;
+  if (localEngineInfo != null) {
+    final String localEngineName = localEngineInfo.localEngineName;
+    if (localEngineName.contains('_arm64')) {
+      return <DarwinArch>[ DarwinArch.arm64 ];
+    }
+    if (localEngineName.contains('_sim')) {
+      return <DarwinArch>[ DarwinArch.x86_64 ];
+    }
+  } else if (environmentType == EnvironmentType.simulator) {
+    return <DarwinArch>[
+      DarwinArch.x86_64,
+      DarwinArch.arm64,
+    ];
+  }
+  return <DarwinArch>[
+    DarwinArch.arm64,
+  ];
+}
+
 /// The default set of macOS device architectures to build for.
 List<DarwinArch> defaultMacOSArchsForEnvironment(Artifacts artifacts) {
   // Handle single-arch local engines.
@@ -696,6 +727,17 @@ DarwinArch getIOSArchForName(String arch) {
   throw Exception('Unsupported iOS arch name "$arch"');
 }
 
+DarwinArch getXROSArchForName(String arch) {
+  switch (arch) {
+    case 'arm64':
+    case 'arm64e':
+      return DarwinArch.arm64;
+    case 'x86_64':
+      return DarwinArch.x86_64;
+  }
+  throw Exception('Unsupported visionOS arch name "$arch"');
+}
+
 DarwinArch getDarwinArchForName(String arch) {
   switch (arch) {
     case 'arm64':
@@ -721,6 +763,11 @@ String getNameForTargetPlatform(TargetPlatform platform, {DarwinArch? darwinArch
         return 'ios-${darwinArch.name}';
       }
       return 'ios';
+    case TargetPlatform.xros:
+      if (darwinArch != null) {
+        return 'xros-${darwinArch.name}';
+      }
+      return 'xros';
     case TargetPlatform.darwin:
       if (darwinArch != null) {
         return 'darwin-${darwinArch.name}';
@@ -763,6 +810,8 @@ TargetPlatform getTargetPlatformForName(String platform) {
       return TargetPlatform.fuchsia_x64;
     case 'ios':
       return TargetPlatform.ios;
+    case 'xros':
+      return TargetPlatform.xros;
     case 'darwin':
     // For backward-compatibility and also for Tester, where it must match
     // host platform name (HostPlatform.darwin_x64)
@@ -852,6 +901,11 @@ String getIosBuildDirectory() {
   return globals.fs.path.join(getBuildDirectory(), 'ios');
 }
 
+/// Returns the visionOS build output directory.
+String getXrosBuildDirectory() {
+  return globals.fs.path.join(getBuildDirectory(), 'xros');
+}
+
 /// Returns the macOS build output directory.
 String getMacOSBuildDirectory() {
   return globals.fs.path.join(getBuildDirectory(), 'macos');
@@ -931,6 +985,12 @@ const String kFileSystemRoots = 'FileSystemRoots';
 /// This is expected to be a space-delimited list of architectures. If not
 /// provided, defaults to arm64.
 const String kIosArchs = 'IosArchs';
+
+/// The define to control what visionOS architectures are built for.
+///
+/// This is expected to be a space-delimited list of architectures. If not
+/// provided, defaults to arm64.
+const String kXrosArchs = 'XrosArchs';
 
 /// The define to control what macOS architectures are built for.
 ///

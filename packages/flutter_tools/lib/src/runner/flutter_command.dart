@@ -1798,6 +1798,8 @@ DevelopmentArtifact? artifactFromTargetPlatform(TargetPlatform targetPlatform) {
       return DevelopmentArtifact.web;
     case TargetPlatform.ios:
       return DevelopmentArtifact.iOS;
+    case TargetPlatform.xros:
+      return DevelopmentArtifact.visionOS;
     case TargetPlatform.darwin:
       if (featureFlags.isMacOSEnabled) {
         return DevelopmentArtifact.macOS;
